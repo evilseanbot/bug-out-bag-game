@@ -35,7 +35,7 @@
 				font-size: 24px;
 			}
 		</style>
-		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+		<script src='js/angular.js'></script>
 		<script>
 			angular.module("bob", []);
 
@@ -50,7 +50,7 @@
 						$scope.minutesPassed++;
 						$scope.player.thirst += 0.0231;
 						$scope.drinkWater();
-						$scope.findWater();						
+
 						if ($scope.player.thirst > 11.1 && thirstLevel == 0)
 						{
 							thirstLevel = 1;
@@ -62,6 +62,11 @@
 							thirstLevel = 2;
 							$scope.addLogEntry("You became severely dehydrated", $scope.minutesPassed);
 						}
+
+						$scope.player.capability = $scope.capability();
+						// Actions effected by capability
+						$scope.findWater();						
+
 
 						if ($scope.minutesPassed >= 525600)
 						{
@@ -181,19 +186,26 @@
 					var random = $scope.random(60*24);
 					if (random == 1)
 					{
-						if ($scope.hasItem('0.02 Water Purifier', $scope.player.bag))
+						var random = $scope.random(100);
+						if (random < $scope.player.capability)
 						{
-							$scope.addLogEntry("You found a pond of water, and were able to purify the water.", $scope.minutesPassed);
-							$scope.refillWater();							
+							if ($scope.hasItem('0.02 Water Purifier', $scope.player.bag))
+							{
+								$scope.addLogEntry("You found a pond of water, and were able to purify the water.", $scope.minutesPassed);
+								$scope.refillWater();							
+							}
+							else if ($scope.player.thirst < 50)
+							{
+								$scope.addLogEntry("You found a pond of water, but it looked really gross.", $scope.minutesPassed);
+							}
+							else
+							{
+								$scope.addLogEntry("You found a pond of water, it looked really gross but you drank it anyway because you were so dehydrated. You died of disease shortly after.", $scope.minutesPassed);
+								$scope.player.alive = false;
+							}
 						}
-						else if ($scope.player.thirst < 50)
-						{
-							$scope.addLogEntry("You found a pond of water, but it looked really gross.", $scope.minutesPassed);
-						}
-						else
-						{
-							$scope.addLogEntry("You found a pond of water, it looked really gross but you drank it anyway because you were so dehydrated. You died of disease shortly after.", $scope.minutesPassed);
-							$scope.player.alive = false;
+						else {
+							$scope.addLogEntry("You went looking for a water source, but failed." + $scope.player.problemText, $scope.minutesPassed);
 						}
 					}
 				}
@@ -248,6 +260,38 @@
 					}
 				}
 
+				$scope.capability = function() {
+					var result = 100;
+					var problems = [];
+
+					if ($scope.player.thirst >= 50)
+					{
+						result -= 30; 
+						problems.push("Severely Dehydrated");
+					}
+					else if ($scope.player.thirst >= 11.1)
+					{
+						result -= 10;
+						problems.push("Thirsty");
+					}
+
+					if (problems.length > 0)
+					{
+						var problemText = "You are "
+						for (var i = 0; i <  problems.length; i++)
+						{
+							if (i != 0)
+							{
+								problemText += ", ";
+							}
+							problemText += problems[i];
+						}
+					}
+					problemText += ".";
+					$scope.player.problemText = problemText;
+					return result;
+				}
+
 				$scope.setup = {
 					bag: 
 					{
@@ -261,17 +305,17 @@
 					items: [
 						{
 						    name: 'Water Bottle'
-						    , img: 'http://1.bp.blogspot.com/_SLQk9aAv9-o/S7NNbJPv7NI/AAAAAAAAAN8/V1LcO0ViDc4/s1600/waterbottle.jpg'
+						    , img: 'img/waterbottle.jpg'
 						    , volumeCCM: 750
 						}
 						, {
 							name: 'Lighter'
-							, img: 'http://upload.wikimedia.org/wikipedia/commons/0/02/100_Yen_lighter.JPG'
+							, img: 'img/lighter.jpg'
 							, volumeCCM: 20
 						}
 						, {
 							name: '0.02 Water Purifier'
-							, img: 'http://ecx.images-amazon.com/images/I/81KTnbJk5pL._SL1500_.jpg'
+							, img: 'img/purifier.jpg'
 							, volumeCCM: 47
 						}
 					]
@@ -316,7 +360,7 @@
 			</div>
 		</div>
 		<div style='color: #888'>
-		Version 0.2, now ponds aren't merely cruel traps.
+		Version 0.3, now condition (Thirst) effects your ability to find resources.
 		</div>
 	</body>
 </html>
