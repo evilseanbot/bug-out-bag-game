@@ -5,12 +5,20 @@ function Ctrl($scope)
 	$scope.playThrough = function() {
 		$scope.resetGame();
 		var thirstLevel = 0;
+		var hungerLevel = 0;
 
 		while ($scope.alive()) 
 		{
 			$scope.minutesPassed++;
 			$scope.player.thirst += 0.0231;
+			$scope.player.hunger += 0.0023;
 			$scope.drinkWater();
+
+			if ($scope.player.thirst < 11.1 && thirstLevel != 0)
+			{
+				thirstLevel = 0;
+				$scope.addLogEntry("You are no longer thirsty", $scope.minutesPassed);				
+			}
 
 			if ($scope.player.thirst > 11.1 && thirstLevel == 0)
 			{
@@ -22,6 +30,24 @@ function Ctrl($scope)
 			{
 				thirstLevel = 2;
 				$scope.addLogEntry("You became severely dehydrated", $scope.minutesPassed);
+			}
+
+			if ($scope.player.hunger < 2.2 && hungerLevel != 0)
+			{
+				hungerLevel = 0;
+				$scope.addLogEntry("You are no longer hungry", $scope.minutesPassed);				
+			}
+
+			if ($scope.player.hunger > 2.2 && hungerLevel == 0)
+			{
+				hungerLevel = 1;
+				$scope.addLogEntry("You became hungry", $scope.minutesPassed);
+			}
+
+			if ($scope.player.hunger > 10 && hungerLevel == 1)
+			{
+				hungerLevel = 3;
+				$scope.addLogEntry("You became starving", $scope.minutesPassed);
 			}
 
 			$scope.player.capability = $scope.capability();
@@ -37,7 +63,11 @@ function Ctrl($scope)
 		}
 
 		if ($scope.player.thirst >= 100) {
-			$scope.addLogEntry("Died from thirst.", $scope.minutesPassed);
+			$scope.addLogEntry("Died from dehydration.", $scope.minutesPassed);
+		}
+
+		if ($scope.player.hunger >= 100) {
+			$scope.addLogEntry("Died from starvation.", $scope.minutesPassed);
 		}
 
 		$scope.addLogEntry("Survived " + $scope.minutesPassed + " minutes", $scope.minutesPassed);
@@ -45,6 +75,10 @@ function Ctrl($scope)
 
 	$scope.alive = function() {
 		if ($scope.player.thirst >= 100)
+		{
+			return false;
+		}
+		else if ($scope.player.hunger >= 100)
 		{
 			return false;
 		}
@@ -130,6 +164,7 @@ function Ctrl($scope)
 		$scope.logEntries = [];
 		$scope.player.alive = true;
 		$scope.player.thirst = 0;
+		$scope.player.hunger = 0;
 		$scope.player.bag = {
 			items: $scope.clone($scope.setup.bag.items)
 			, volumeCapacity: 10000
@@ -166,7 +201,7 @@ function Ctrl($scope)
 				}
 			}
 			else {
-				$scope.addLogEntry("You went looking for a water source, but failed." + $scope.player.problemText, $scope.minutesPassed);
+				$scope.addLogEntry("You went looking for a water source, but failed. " + $scope.player.problemText, $scope.minutesPassed);
 			}
 		}
 	}
@@ -191,14 +226,8 @@ function Ctrl($scope)
 
 	$scope.refillWater = function()
 	{
-		if ($scope.player.thirst < 50)
-		{
-			$scope.addLogEntry("You drank your fill.", $scope.minutesPassed); 						
-		}
-		else
-		{
-			$scope.addLogEntry("You drank your fill, you are no longer dehydrated.", $scope.minutesPassed)
-		}
+		$scope.addLogEntry("You drank your fill.", $scope.minutesPassed); 						
+
 		$scope.player.thirst = 0;			
 
 		var refilledBottles = 0;
@@ -227,14 +256,26 @@ function Ctrl($scope)
 
 		if ($scope.player.thirst >= 50)
 		{
-			result -= 30; 
+			result *= 0.5; 
 			problems.push("Severely Dehydrated");
 		}
 		else if ($scope.player.thirst >= 11.1)
 		{
-			result -= 10;
+			result *= 0.75;
 			problems.push("Thirsty");
 		}
+
+		if ($scope.player.hunger >= 10)
+		{
+			result *= 0.5; 
+			problems.push("Starving");
+		}
+		else if ($scope.player.thirst >= 2.2)
+		{
+			result *= 0.75;
+			problems.push("Hungry");
+		}
+
 
 		if (problems.length > 0)
 		{
