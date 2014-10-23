@@ -13,6 +13,7 @@ function Ctrl($scope)
 			$scope.player.thirst += 0.0231;
 			$scope.player.hunger += 0.0023;
 			$scope.drinkWater();
+			$scope.eatFood();
 
 			if ($scope.player.thirst < 11.1 && thirstLevel != 0)
 			{
@@ -108,7 +109,7 @@ function Ctrl($scope)
 							item.utility -= 10;
 							if (item.utility <= 0)
 							{
-								$scope.addLogEntry("You drank all of a water bottle", $scope.minutesPassed);
+								//$scope.addLogEntry("You drank all of a water bottle", $scope.minutesPassed);
 							}
 
 							$scope.player.thirst -= 0.82;
@@ -119,6 +120,39 @@ function Ctrl($scope)
 			}
 		}
 	}
+
+	$scope.eatFood = function() {
+		if ($scope.player.hunger > 1)
+		{
+			var ate = false;
+			for (var i in $scope.player.bag.items)
+			{
+				if (!ate) 
+				{
+					var item = $scope.player.bag.items[i];
+					if (item.name == "Cotton Candy (4 bags)" || item.name == "Trail Mix")
+					{
+						if (item.utility > 0)
+						{
+							item.utility -= 10;
+							if (item.utility <= 0)
+							{
+								$scope.addLogEntry("You ate all of a bag", $scope.minutesPassed);
+							}
+
+							if (item.name == "Cotton Candy (4 bags)")
+								$scope.player.hunger -= (132.0*100.0) / (2000*30.0)
+
+							if (item.name == "Trail Mix")
+								$scope.player.hunger -= (967.0*100.0) / (2000.0*30.0)
+							
+							ate = true;
+						}
+					}
+				}
+			}
+		}
+	}	
 
 	$scope.addLogEntry = function(entry, minutesPassed)
 	{
@@ -270,7 +304,7 @@ function Ctrl($scope)
 			result *= 0.5; 
 			problems.push("Starving");
 		}
-		else if ($scope.player.thirst >= 2.2)
+		else if ($scope.player.hunger >= 2.2)
 		{
 			result *= 0.75;
 			problems.push("Hungry");
@@ -318,7 +352,17 @@ function Ctrl($scope)
 			, {
 				name: '0.02 Water Purifier'
 				, img: 'img/purifier.jpg'
-				, volumeCCM: 47
+				, volumeCCM: 1263
+			}
+			, {
+				name: 'Cotton Candy (4 bags)'
+				, img: 'img/cottoncandy.jpg'
+				, volumeCCM: 1064
+			}
+			, {
+				name: 'Trail Mix'
+				, img: 'img/trailmix.jpg'
+				, volumeCCM: 1005
 			}
 		]
 	}

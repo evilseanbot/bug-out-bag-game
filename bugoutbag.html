@@ -9,7 +9,7 @@
 			<h1>Events:</h1>
 			<div ng-repeat='entry in logEntries'>{{entry}}</div>
 		</div>	
-		<div class='store' style='display: inline-block; vertical-align: top'>
+		<div class='store' style='display: inline-block; vertical-align: top; width: 700px'>
 			<div ng-repeat='item in store.items' class='storeItem'>
 			<img src='{{item.img}}' width='200' height='200'><br>
 			{{item.name}}<br>			
@@ -32,7 +32,7 @@
 			</div>
 		</div>
 		<div style='color: #888'>
-		Version 0.4, added a hunger you are never able to sate.
+		Version 0.5, added delicious food.
 		</div>
 	</body>
 </html>
