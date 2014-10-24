@@ -364,6 +364,11 @@ function Ctrl($scope)
 				, img: 'img/trailmix.jpg'
 				, volumeCCM: 1005
 			}
+			, {
+				name: 'Assault Rifle'
+				, img: 'img/assaultrifle.jpg'
+				, volumeCCM: 1891
+			}
 		]
 	}
 
