@@ -9,14 +9,14 @@
 			<h1>Events:</h1>
 			<div ng-repeat='entry in logEntries'>{{entry}}</div>
 		</div>	
-		<div class='store' style='display: inline-block; vertical-align: top; width: 700px'>
+		<div class='store'>
 			<div ng-repeat='item in store.items' class='storeItem'>
 			<img src='{{item.img}}' style='width: 200px; height: 200px'><br>
 			{{item.name}}<br>			
 			<button class='button' ng-click='addToBag(item, setup.bag)'>Buy</button>  {{item.volumeCCM}} cm3
 			</div>
 		</div>		
-		<div class='checklist' style='display: inline-block; vertical-align: top'>
+		<div class='checklist'>
 			<div style='background-color: #fbb'>{{error}}</div>
 			<div class='button' ng-click='playThrough()'>JOURNEY</div><br>
 			Bug Out Bag {{setup.bag.volumeCapacity - setup.bag.volumeFilled}} of {{setup.bag.volumeCapacity}} cm3 space left.
