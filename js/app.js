@@ -1,8 +1,20 @@
-angular.module("bob", []);
+angular.module("bob", ['ui.bootstrap']);
 
-function Ctrl($scope)
+function Ctrl($scope, $modal)
 {
+	$scope.open = function(size) {
+	    var modalInstance = $modal.open({
+	        template: 'Hiii',
+	        controller: 'Ctrl',
+	        size: size
+	    });
+
+	}
+
 	$scope.playThrough = function() {
+
+		$scope.open('sm');
+
 		$scope.resetGame();
 		var thirstLevel = 0;
 		var hungerLevel = 0;
