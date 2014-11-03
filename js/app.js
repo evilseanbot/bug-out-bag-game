@@ -18,6 +18,8 @@ function Ctrl($scope, $modal)
 		$scope.resetGame();
 		var thirstLevel = 0;
 		var hungerLevel = 0;
+		var coldLevel = 0;
+		var hypoLevel = 0;
 
 		while ($scope.alive()) 
 		{
@@ -26,6 +28,9 @@ function Ctrl($scope, $modal)
 			$scope.player.hunger += 0.0023;
 			$scope.drinkWater();
 			$scope.eatFood();
+			$scope.rain();
+			$scope.adjustBodyTemp();
+
 
 			if ($scope.player.thirst < 11.1 && thirstLevel != 0)
 			{
@@ -63,6 +68,34 @@ function Ctrl($scope, $modal)
 				$scope.addLogEntry("You became starving", $scope.minutesPassed);
 			}
 
+			if ($scope.airTemp() + $scope.clothesTemp() < 34 && coldLevel == 0)
+			{
+				coldLevel = 1;
+				$scope.addLogEntry("You became cold", $scope.minutesPassed);
+			}
+			if ($scope.airTemp() + $scope.clothesTemp() > 34 && coldLevel == 1)
+			{
+				coldLevel = 0;
+				$scope.addLogEntry("You are no longer cold", $scope.minutesPassed);
+			}
+
+			if ($scope.player.bodyTemp < 33.5 && hypoLevel == 0)
+			{
+				hypoLevel = 1;
+				$scope.addLogEntry("You have mild hypothermia", $scope.minutesPassed);
+			}
+			if ($scope.player.bodyTemp < 23.5 && hypoLevel == 1)
+			{
+				hypoLevel = 2;
+				$scope.addLogEntry("You have severe hypothermia", $scope.minutesPassed);
+			}
+			if ($scope.player.bodyTemp > 33.5 && (hypoLevel == 1 || hypoLevel == 2) )
+			{
+				hypoLevel = 0;
+				$scope.addLogEntry("You no longer have hypothermia", $scope.minutesPassed);
+			}
+
+
 			$scope.player.capability = $scope.capability();
 			// Actions effected by capability
 			$scope.findWater();						
@@ -75,24 +108,64 @@ function Ctrl($scope, $modal)
 			}
 		}
 
-		if ($scope.player.thirst >= 100) {
-			$scope.addLogEntry("Died from dehydration.", $scope.minutesPassed);
-		}
 
 		if ($scope.player.hunger >= 100) {
-			$scope.addLogEntry("Died from starvation.", $scope.minutesPassed);
 		}
 
 		$scope.addLogEntry("Survived " + $scope.minutesPassed + " minutes", $scope.minutesPassed);
 	}
 
+	$scope.airTemp = function() {
+		var temp = 20;
+		var minute = $scope.minutesPassed % (60*24);
+		if (minute > (60*12)) {
+			temp -= 5;
+		}
+
+		if ($scope.raining)
+		{
+			temp -= 3;
+		}
+		return temp;
+	}
+
+	$scope.adjustBodyTemp = function() {
+		var tempDistance = ($scope.airTemp() + $scope.clothesTemp()) - $scope.player.bodyTemp;
+		var tempChange = tempDistance / 200.0;
+		$scope.player.bodyTemp += tempChange;
+	}
+
+	$scope.clothesTemp = function() {
+		if ($scope.player.naked)
+		{
+			return 0;
+		} 
+		else if ($scope.player.wetClothes)
+		{
+			return 5;
+		} 
+		else
+		{ 
+			return 17.5;
+		}
+	}
+
 	$scope.alive = function() {
+
+
 		if ($scope.player.thirst >= 100)
 		{
+			$scope.addLogEntry("Died from dehydration.", $scope.minutesPassed);
 			return false;
 		}
 		else if ($scope.player.hunger >= 100)
 		{
+			$scope.addLogEntry("Died from starvation.", $scope.minutesPassed);
+			return false;
+		}
+		else if ($scope.player.bodyTemp <= 20)
+		{
+			$scope.addLogEntry("Died from hypothermia.", $scope.minutesPassed);
 			return false;
 		}
 		else if (!$scope.player.alive)
@@ -208,9 +281,13 @@ function Ctrl($scope, $modal)
 	{
 		$scope.minutesPassed = 0;
 		$scope.logEntries = [];
+		$scope.raining = false;
 		$scope.player.alive = true;
 		$scope.player.thirst = 0;
 		$scope.player.hunger = 0;
+		$scope.player.bodyTemp = 37.5;
+		$scope.player.wetClothes = false;
+		$scope.player.naked = false;
 		$scope.player.bag = {
 			items: $scope.clone($scope.setup.bag.items)
 			, volumeCapacity: 10000
@@ -234,6 +311,7 @@ function Ctrl($scope, $modal)
 				if ($scope.hasItem('0.02 Water Purifier', $scope.player.bag))
 				{
 					$scope.addLogEntry("You found a pond of water, and were able to purify the water.", $scope.minutesPassed);
+					$scope.drinkUp();												
 					$scope.refillWater();							
 				}
 				else if ($scope.player.thirst < 50)
@@ -249,6 +327,31 @@ function Ctrl($scope, $modal)
 			else {
 				$scope.addLogEntry("You went looking for a water source, but failed. " + $scope.player.problemText, $scope.minutesPassed);
 			}
+		}
+	}
+
+	$scope.rain = function()
+	{
+		var random = $scope.random(60*24*3);
+		if (random == 1)
+		{
+			$scope.addLogEntry("It rained.", $scope.minutesPassed);
+			$scope.refillWater();							
+			$scope.raining = true;
+			$scope.rainTimer = 0;
+
+			if (!$scope.hasItem("Poncho", $scope.player.bag) && !$scope.player.wetClothes)
+			{
+				$scope.addLogEntry("Your clothes became wet.", $scope.minutesPassed);
+				$scope.player.wetClothes = true;
+			}
+		}
+
+		if ($scope.raining) 
+		{
+			$scope.rainTimer += 1;
+			if ($scope.rainTimer >= (60*12))
+				$scope.raining = false;
 		}
 	}
 
@@ -270,12 +373,14 @@ function Ctrl($scope, $modal)
 		return false;
 	}
 
-	$scope.refillWater = function()
+	$scope.drinkUp = function()
 	{
 		$scope.addLogEntry("You drank your fill.", $scope.minutesPassed); 						
+		$scope.player.thirst = 0;					
+	}
 
-		$scope.player.thirst = 0;			
-
+	$scope.refillWater = function()
+	{
 		var refilledBottles = 0;
 		for (var i in $scope.player.bag.items)
 		{
@@ -320,6 +425,23 @@ function Ctrl($scope, $modal)
 		{
 			result *= 0.75;
 			problems.push("Hungry");
+		}
+
+		if ($scope.airTemp() + $scope.clothesTemp() < 34)
+		{
+			result *= 0.75;
+			problems.push("Cold");
+		}
+
+		if ($scope.player.bodyTemp < 23.5)
+		{
+			result *= 0.5;
+			problems.push("have Severe Hypothermia");
+		}
+		else if ($scope.player.bodyTemp < 33.5)
+		{
+			result *= 0.75;
+			problems.push("have Mild Hypothermia");
 		}
 
 
@@ -412,6 +534,11 @@ function Ctrl($scope, $modal)
 				name: 'Assault Rifle'
 				, img: 'img/assaultrifle.jpg'
 				, volumeCCM: 1891
+			}
+			, {
+				name: 'Poncho'
+				, img: 'img/poncho.jpg'
+				, volumeCCM: 3390
 			}
 		]
 	}
