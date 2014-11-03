@@ -340,6 +340,38 @@ function Ctrl($scope, $modal)
 		return result;
 	}
 
+	$scope.list = function(bag)
+	{
+		var list = [];
+		var itemsInList = [];
+		for (var i in bag.items)
+		{
+			var item = bag.items[i];
+			if (itemsInList.indexOf(item.name) == -1)
+			{
+				itemsInList.push(item.name);
+				list.push({
+					name: item.name
+					, volumeCCM: item.volumeCCM
+					, quantity: 1 
+					, index: i
+				})
+			}
+			else {
+				for (var j in list)
+				{
+					var listItem = list[j];
+					if (item.name == listItem.name)
+					{
+						listItem.volumeCCM += item.volumeCCM;
+						listItem.quantity++;
+					}
+				}
+			}
+		}
+		return list;
+	}
+
 	$scope.setup = {
 		bag: 
 		{

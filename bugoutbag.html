@@ -20,24 +20,24 @@
 			<div style='background-color: #fbb'>{{error}}</div>
 			<div class='button' ng-click='playThrough()' data-toggle="modal" data-target="#myModal">JOURNEY</div><br>
 			Bug Out Bag {{setup.bag.volumeCapacity - setup.bag.volumeFilled}} of {{setup.bag.volumeCapacity}} cm3 space left.
-			<div ng-repeat='item in setup.bag.items' class='item'>
+			<div ng-repeat='item in list(setup.bag)' class='item'>
 				<div style='width: 410px; display: inline-block'>
-					{{item.name}}
+					{{item.name}} <span ng-show='item.quantity>1'>x {{item.quantity}}</span>
 				</div>
-				<div style='width: 150px; display: inline-block; color: #888'>
+				<div style='width: 125px; display: inline-block; color: #888'>
 					{{item.volumeCCM}} cm3
 				</div>
-				<span ng-click='removeItem($index, setup.bag)' style='color: red'>X</span>
+				<span ng-click='removeItem(item.index, setup.bag)' style='color: red'>X</span>
 
 			</div>
 		</div>
 		<div style='color: #888'>
-		Version 0.6, Now with badass gunzzz.
+		Version 0.7, Now with a modal.
 		</div>
 
 		<!-- Modal -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		  <div class="modal-dialog modal-lg">
+		  <div class="modal-dialog">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
