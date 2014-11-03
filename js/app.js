@@ -1,6 +1,6 @@
-angular.module("bob", ['ui.bootstrap']);
+angular.module("bob", []);
 
-function Ctrl($scope, $modal)
+function Ctrl($scope)
 {
 	$scope.open = function(size) {
 	    var modalInstance = $modal.open({
