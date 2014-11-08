@@ -319,7 +319,7 @@ function Ctrl($scope)
 			$scope.raining = true;
 			$scope.rainTimer = 0;
 
-			if (_.some($scope.player.bag.items, {name: 'Poncho'}) && !$scope.player.wetClothes)
+			if (!_.some($scope.player.bag.items, {name: 'Poncho'}) && !$scope.player.wetClothes)
 			{
 				$scope.addLogEntry("Your clothes became wet.", $scope.minutesPassed);
 				$scope.player.wetClothes = true;
