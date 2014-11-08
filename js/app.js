@@ -182,27 +182,21 @@ function Ctrl($scope)
 		if ($scope.player.thirst > 1)
 		{
 			var drank = false;
-			for (var i in $scope.player.bag.items)
-			{
+			_($scope.player.bag.items).each(function(item) {
+
 				if (!drank) 
 				{
-					var item = $scope.player.bag.items[i];
 					if (item.name == "Water Bottle")
 					{
 						if (item.utility > 0)
 						{
 							item.utility -= 10;
-							if (item.utility <= 0)
-							{
-								//$scope.addLogEntry("You drank all of a water bottle", $scope.minutesPassed);
-							}
-
 							$scope.player.thirst -= 0.82;
 							drank = true;
 						}
 					}
 				}
-			}
+			});
 		}
 	}
 
@@ -210,11 +204,9 @@ function Ctrl($scope)
 		if ($scope.player.hunger > 1)
 		{
 			var ate = false;
-			for (var i in $scope.player.bag.items)
-			{
+			_($scope.player.bag.items).each(function(item) {
 				if (!ate) 
 				{
-					var item = $scope.player.bag.items[i];
 					if (item.name == "Cotton Candy (4 bags)" || item.name == "Trail Mix")
 					{
 						if (item.utility > 0)
@@ -235,7 +227,7 @@ function Ctrl($scope)
 						}
 					}
 				}
-			}
+			});
 		}
 	}	
 
@@ -302,10 +294,10 @@ function Ctrl($scope)
 
 	$scope.findWater = function()
 	{
-		var random = $scope.random(60*24);
+		var random = _.random(60*24);
 		if (random == 1)
 		{
-			var random = $scope.random(100);
+			var random = _.random(100);
 			if (random < $scope.player.capability)
 			{
 				if ($scope.hasItem('0.02 Water Purifier', $scope.player.bag))
@@ -332,7 +324,7 @@ function Ctrl($scope)
 
 	$scope.rain = function()
 	{
-		var random = $scope.random(60*24*3);
+		var random = _.random(60*24*3);
 		if (random == 1)
 		{
 			$scope.addLogEntry("It rained.", $scope.minutesPassed);
@@ -353,11 +345,6 @@ function Ctrl($scope)
 			if ($scope.rainTimer >= (60*12))
 				$scope.raining = false;
 		}
-	}
-
-	$scope.random = function(max)
-	{
-		return Math.floor(Math.random() * max);
 	}
 
 	$scope.hasItem = function(itemName, bag)
@@ -382,10 +369,7 @@ function Ctrl($scope)
 	$scope.refillWater = function()
 	{
 		var refilledBottles = 0;
-		for (var i in $scope.player.bag.items)
-		{
-			var item = $scope.player.bag.items[i];
-
+		_($scope.player.bag.items).each(function(item){
 			if (item.name == 'Water Bottle')
 			{
 				if (item.utility < 100)
@@ -394,7 +378,7 @@ function Ctrl($scope)
 					refilledBottles += 1;
 				}
 			}
-		}
+		});
 		if (refilledBottles > 0)
 		{
 			$scope.addLogEntry("You refilled " + refilledBottles + " water bottles", $scope.minutesPassed);
@@ -448,14 +432,13 @@ function Ctrl($scope)
 		if (problems.length > 0)
 		{
 			var problemText = "You are "
-			for (var i = 0; i <  problems.length; i++)
-			{
+			_(problems).each(function(problem) { 
 				if (i != 0)
 				{
 					problemText += ", ";
 				}
-				problemText += problems[i];
-			}
+				problemText += problem;
+			});
 		}
 		problemText += ".";
 		$scope.player.problemText = problemText;
