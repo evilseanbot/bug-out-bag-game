@@ -2,19 +2,7 @@ angular.module("bob", []);
 
 function Ctrl($scope)
 {
-	$scope.open = function(size) {
-	    var modalInstance = $modal.open({
-	        template: 'Hiii',
-	        controller: 'Ctrl',
-	        size: size
-	    });
-
-	}
-
 	$scope.playThrough = function() {
-
-		$scope.open('sm');
-
 		$scope.resetGame();
 		var thirstLevel = 0;
 		var hungerLevel = 0;
@@ -259,7 +247,6 @@ function Ctrl($scope)
 
 		bag.items.push(newItem);
 		bag.volumeFilled += newItem.volumeCCM;
-
 	}
 
 	$scope.removeItem = function(index, bag)
@@ -300,7 +287,7 @@ function Ctrl($scope)
 			var random = _.random(100);
 			if (random < $scope.player.capability)
 			{
-				if ($scope.hasItem('0.02 Water Purifier', $scope.player.bag))
+				if (_.some($scope.player.bag.items, {name: '0.02 Water Purifier'}))
 				{
 					$scope.addLogEntry("You found a pond of water, and were able to purify the water.", $scope.minutesPassed);
 					$scope.drinkUp();												
@@ -332,7 +319,7 @@ function Ctrl($scope)
 			$scope.raining = true;
 			$scope.rainTimer = 0;
 
-			if (!$scope.hasItem("Poncho", $scope.player.bag) && !$scope.player.wetClothes)
+			if (_.some($scope.player.bag.items, {name: 'Poncho'}) && !$scope.player.wetClothes)
 			{
 				$scope.addLogEntry("Your clothes became wet.", $scope.minutesPassed);
 				$scope.player.wetClothes = true;
@@ -345,19 +332,6 @@ function Ctrl($scope)
 			if ($scope.rainTimer >= (60*12))
 				$scope.raining = false;
 		}
-	}
-
-	$scope.hasItem = function(itemName, bag)
-	{
-		for (i in bag.items)
-		{
-			var item = bag.items[i];
-			if (item.name == itemName)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	$scope.drinkUp = function()
@@ -433,7 +407,7 @@ function Ctrl($scope)
 		{
 			var problemText = "You are "
 			_(problems).each(function(problem) { 
-				if (i != 0)
+				if (problems.indexOf(problem) != 0)
 				{
 					problemText += ", ";
 				}
@@ -448,33 +422,22 @@ function Ctrl($scope)
 	$scope.list = function(bag)
 	{
 		var list = [];
-		var itemsInList = [];
-		for (var i in bag.items)
-		{
-			var item = bag.items[i];
-			if (itemsInList.indexOf(item.name) == -1)
-			{
-				itemsInList.push(item.name);
-				list.push({
-					name: item.name
-					, volumeCCM: item.volumeCCM
-					, quantity: 1 
-					, index: i
-				})
-			}
-			else {
-				for (var j in list)
-				{
-					var listItem = list[j];
-					if (item.name == listItem.name)
-					{
-						listItem.volumeCCM += item.volumeCCM;
-						listItem.quantity++;
-					}
-				}
-			}
-		}
+		var names = _.uniq(_.pluck(bag.items, 'name'));
+		var itemTypeCount = _.countBy(bag.items, 'name');
+
+		_(names).each(function(itemType) {
+			var item = _.first(_.where(bag.items, {name: itemType}));
+
+			list.push({
+				name: itemType,
+				volumeCCM: (item.volumeCCM * itemTypeCount[itemType]),
+				quantity: itemTypeCount[itemType],
+			    index: bag.items.indexOf(item) 
+			});
+		});
+
 		return list;
+
 	}
 
 	$scope.setup = {
