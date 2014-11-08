@@ -1,4 +1,4 @@
-***Bug out bag game***
+**Bug out bag game**
 
 *To install dependencies*
 
