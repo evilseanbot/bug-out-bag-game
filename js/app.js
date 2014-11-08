@@ -18,6 +18,7 @@ function Ctrl($scope)
 			$scope.eatFood();
 			$scope.rain();
 			$scope.adjustBodyTemp();
+			$scope.useFlashlight();
 
 
 			if ($scope.player.thirst < 11.1 && thirstLevel != 0)
@@ -101,6 +102,31 @@ function Ctrl($scope)
 		}
 
 		$scope.addLogEntry("Survived " + $scope.minutesPassed + " minutes", $scope.minutesPassed);
+	}
+
+	$scope.useFlashlight = function() {
+		var items = $scope.player.bag.itemsl;
+
+		if ($scope.isDark()) {
+			var usableFlashlights = $scope.usableItems('Flashlight');
+
+			if (usableFlashlights.length > 0) {
+				var usableFlashlight = _.first(usableFlashlights);
+				usableFlashlight.utility -= (100.0/60.0/24.0);
+
+				if (usableFlashlight.utility <= 0) {
+					$scope.addLogEntry("Used up flashlight batteries", $scope.minutesPassed);
+				}
+			}		
+		}
+	}
+
+	$scope.usableItems = function(name) {
+		var items = $scope.player.bag.items;
+		var itemsOfType = _.where(items, {name: name});
+		return _.filter(itemsOfType, function(item) {
+			return item.utility > 0;
+		});
 	}
 
 	$scope.airTemp = function() {
@@ -402,6 +428,16 @@ function Ctrl($scope)
 			problems.push("have Mild Hypothermia");
 		}
 
+		if ($scope.isDark() && $scope.usableItems("Flashlight").length > 0) 
+		{
+			result *= 0.75;
+			problems.push("in Darkness lit by Flashlight")
+		} else if ($scope.isDark()) 
+		{
+			result *= 0.50;
+			problems.push("in Darkness")
+		}
+
 
 		if (problems.length > 0)
 		{
@@ -417,6 +453,14 @@ function Ctrl($scope)
 		problemText += ".";
 		$scope.player.problemText = problemText;
 		return result;
+	}
+
+	$scope.isDark = function() {
+		if ( ($scope.minutesPassed % (60*24)) > (60*12) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	$scope.list = function(bag)
@@ -486,7 +530,11 @@ function Ctrl($scope)
 				, img: 'img/poncho.jpg'
 				, volumeCCM: 3390
 			}
-		]
+			, {
+				name: 'Flashlight'
+				, img: 'img/flashlight.jpg'
+				, volumeCCM: 98
+			}		]
 	}
 
 	$scope.player = {
