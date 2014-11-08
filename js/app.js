@@ -169,20 +169,19 @@ function Ctrl($scope)
 	$scope.drinkWater = function() {
 		if ($scope.player.thirst > 1)
 		{
+			var waters = _.where($scope.player.bag.items, {name: "Water Bottle"});
+			var usableWaters = _.filter(waters, function(water){
+				return water.utility > 0
+			})
+
 			var drank = false;
-			_($scope.player.bag.items).each(function(item) {
+			_(usableWaters).each(function(item) {
 
 				if (!drank) 
 				{
-					if (item.name == "Water Bottle")
-					{
-						if (item.utility > 0)
-						{
-							item.utility -= 10;
-							$scope.player.thirst -= 0.82;
-							drank = true;
-						}
-					}
+					item.utility -= 10;
+					$scope.player.thirst -= 0.82;
+					drank = true;
 				}
 			});
 		}
@@ -191,29 +190,30 @@ function Ctrl($scope)
 	$scope.eatFood = function() {
 		if ($scope.player.hunger > 1)
 		{
+			var cottonCandy = _.where($scope.player.bag.items, {name: "Cotton Candy (4 bags)"});
+			var trailMix = _.where($scope.player.bag.items, {name: "Trail Mix"});
+			var food = cottonCandy.concat(trailMix);
+			var usableFood = _.filter(food, function(foodItem) {
+				return foodItem.utility > 0
+			});
+
 			var ate = false;
-			_($scope.player.bag.items).each(function(item) {
+			_(usableFood).each(function(item) {
 				if (!ate) 
 				{
-					if (item.name == "Cotton Candy (4 bags)" || item.name == "Trail Mix")
+					item.utility -= 10;
+					if (item.utility <= 0)
 					{
-						if (item.utility > 0)
-						{
-							item.utility -= 10;
-							if (item.utility <= 0)
-							{
-								$scope.addLogEntry("You ate all of a bag", $scope.minutesPassed);
-							}
-
-							if (item.name == "Cotton Candy (4 bags)")
-								$scope.player.hunger -= (132.0*100.0) / (2000*30.0)
-
-							if (item.name == "Trail Mix")
-								$scope.player.hunger -= (967.0*100.0) / (2000.0*30.0)
-							
-							ate = true;
-						}
+						$scope.addLogEntry("You ate all of a bag", $scope.minutesPassed);
 					}
+
+					if (item.name == "Cotton Candy (4 bags)")
+						$scope.player.hunger -= (132.0*100.0) / (2000*30.0)
+
+					if (item.name == "Trail Mix")
+						$scope.player.hunger -= (967.0*100.0) / (2000.0*30.0)
+					
+					ate = true;
 				}
 			});
 		}
