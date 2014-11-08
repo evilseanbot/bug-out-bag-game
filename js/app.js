@@ -471,12 +471,13 @@ function Ctrl($scope)
 
 		_(names).each(function(itemType) {
 			var item = _.first(_.where(bag.items, {name: itemType}));
+			var itemToRemove = _.last(_.where(bag.items, {name: itemType}));
 
 			list.push({
 				name: itemType,
 				volumeCCM: (item.volumeCCM * itemTypeCount[itemType]),
 				quantity: itemTypeCount[itemType],
-			    index: bag.items.indexOf(item) 
+			    index: bag.items.indexOf(itemToRemove) 
 			});
 		});
 
