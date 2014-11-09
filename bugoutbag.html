@@ -11,7 +11,7 @@
 	</head>
 	<body ng-controller='Ctrl'>
 		<div class='store'>
-			<div ng-repeat='item in store.items' class='storeItem'>
+			<div ng-repeat='item in store.items' class='storeItem' ng-click='addToBag(item, setup.bag)'>
 				<img src='{{item.img}}' style='width: 200px; height: 200px'><br>
 				<div style='padding: 5px'>
 					{{item.name}}<br>			

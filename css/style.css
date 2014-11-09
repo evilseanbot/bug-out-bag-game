@@ -30,6 +30,16 @@
 	background-color: #88f;
 }
 
+
+.storeItem:hover .button {
+	background-color: #88f;
+}
+
+.storeItem:hover {
+	cursor: pointer;
+}
+
+
 .checklist {
 	font-size: 24px;
 	display: inline-block; 
