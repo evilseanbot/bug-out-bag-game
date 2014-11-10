@@ -10,20 +10,22 @@
 		<script src='bower_components/bootstrap/dist/js/bootstrap.js'></script>
 	</head>
 	<body ng-controller='Ctrl'>
+
 		<div class='store'>
 			<div ng-repeat='item in store.items' class='storeItem' ng-click='addToBag(item, setup.bag)'>
 				<img src='{{item.img}}' style='width: 200px; height: 200px'><br>
 				<div style='padding: 5px'>
 					{{item.name}}<br>			
-					<button class='button' ng-click='addToBag(item, setup.bag)'>Buy</button>  {{item.volumeCCM}} cm3
+					<button class='button'>Buy</button>  {{item.volumeCCM}} cm3
 				</div>
 			</div>
 		</div>		
+
 		<div class='checklist'>
 			<div style='background-color: #fbb'>{{error}}</div>
 			<div class='button' ng-click='playThrough()' data-toggle="modal" data-target="#myModal">JOURNEY</div><br>
 			Bug Out Bag {{setup.bag.volumeCapacity - setup.bag.volumeFilled}} of {{setup.bag.volumeCapacity}} cm3 space left.
-			<div ng-repeat='item in list(setup.bag)' class='item'>
+			<div ng-repeat='item in boblist' class='item'>
 				<div style='width: 410px; display: inline-block'>
 					{{item.name}} <span ng-show='item.quantity>1'>x {{item.quantity}}</span>
 				</div>

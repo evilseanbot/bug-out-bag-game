@@ -16,7 +16,7 @@ function Ctrl($scope)
 			$scope.player.hunger += 0.0023;
 			$scope.drinkWater();
 			$scope.eatFood();
-			$scope.rain();
+			//$scope.rain();
 			$scope.adjustBodyTemp();
 			$scope.useFlashlight();
 
@@ -115,7 +115,18 @@ function Ctrl($scope)
 				usableFlashlight.utility -= (100.0/60.0/24.0);
 
 				if (usableFlashlight.utility <= 0) {
-					$scope.addLogEntry("Used up flashlight batteries", $scope.minutesPassed);
+
+				    var batteries = $scope.usableItems('Battery');
+				    if (batteries.length > 1) {
+				    	var batteryPair = _.first(batteries, 2);
+				    	batteryPair[0].utility = 0;
+				    	batteryPair[1].utility = 0;
+				    	usableFlashlight.utility = 100;
+						$scope.addLogEntry("Used up a pair of flashlight batteries", $scope.minutesPassed);				    	
+				    } else {
+						$scope.addLogEntry("Used up all flashlight batteries", $scope.minutesPassed);
+				    }
+
 				}
 			}		
 		}
@@ -195,53 +206,40 @@ function Ctrl($scope)
 	$scope.drinkWater = function() {
 		if ($scope.player.thirst > 1)
 		{
-			var waters = _.where($scope.player.bag.items, {name: "Water Bottle"});
-			var usableWaters = _.filter(waters, function(water){
-				return water.utility > 0
-			})
+			var waters = $scope.usableItems("Water Bottle");
+			if (waters.length > 0) {
+				water = _.first(waters);
+				water.utility -= 10;
+				$scope.player.thirst -= 0.82;
 
-			var drank = false;
-			_(usableWaters).each(function(item) {
-
-				if (!drank) 
-				{
-					item.utility -= 10;
-					$scope.player.thirst -= 0.82;
-					drank = true;
+				if (water.utility <= 0 && waters.length == 1) {
+					$scope.addLogEntry("Drank last water bottle", $scope.minutesPassed);					
 				}
-			});
+			}
 		}
 	}
 
 	$scope.eatFood = function() {
 		if ($scope.player.hunger > 1)
 		{
-			var cottonCandy = _.where($scope.player.bag.items, {name: "Cotton Candy (4 bags)"});
-			var trailMix = _.where($scope.player.bag.items, {name: "Trail Mix"});
-			var food = cottonCandy.concat(trailMix);
-			var usableFood = _.filter(food, function(foodItem) {
-				return foodItem.utility > 0
-			});
+			var cottonCandy = $scope.usableItems("Cotton Candy (4 bags)");
+			var trailMix = $scope.usableItems("Trail Mix");
+			var foods = cottonCandy.concat(trailMix);
 
-			var ate = false;
-			_(usableFood).each(function(item) {
-				if (!ate) 
+			if (foods.length > 0) {
+				var food = _.first(foods);
+				food.utility -= 10;
+				if (food.utility <= 0)
 				{
-					item.utility -= 10;
-					if (item.utility <= 0)
-					{
-						$scope.addLogEntry("You ate all of a bag", $scope.minutesPassed);
-					}
-
-					if (item.name == "Cotton Candy (4 bags)")
-						$scope.player.hunger -= (132.0*100.0) / (2000*30.0)
-
-					if (item.name == "Trail Mix")
-						$scope.player.hunger -= (967.0*100.0) / (2000.0*30.0)
-					
-					ate = true;
+					$scope.addLogEntry("You ate all of a bag", $scope.minutesPassed);
 				}
-			});
+
+				if (food.name == "Cotton Candy (4 bags)")
+					$scope.player.hunger -= (132.0*100.0) / (2000*30.0)
+
+				if (food.name == "Trail Mix")
+					$scope.player.hunger -= (967.0*100.0) / (2000.0*30.0)
+			}
 		}
 	}	
 
@@ -273,13 +271,15 @@ function Ctrl($scope)
 
 		bag.items.push(newItem);
 		bag.volumeFilled += newItem.volumeCCM;
+		$scope.list($scope.setup.bag);							
 	}
 
 	$scope.removeItem = function(index, bag)
 	{
 		bag.volumeFilled -= bag.items[index].volumeCCM;
 		bag.items.splice(index, 1);
-		$scope.error = "";					
+		$scope.error = "";
+		$scope.list($scope.setup.bag);					
 	}
 
 	$scope.resetGame = function()
@@ -345,7 +345,7 @@ function Ctrl($scope)
 			$scope.raining = true;
 			$scope.rainTimer = 0;
 
-			if (!_.some($scope.player.bag.items, {name: 'Poncho'}) && !$scope.player.wetClothes)
+			if ($scope.usableItems('Poncho').length < 1 && !$scope.player.wetClothes)
 			{
 				$scope.addLogEntry("Your clothes became wet.", $scope.minutesPassed);
 				$scope.player.wetClothes = true;
@@ -369,16 +369,27 @@ function Ctrl($scope)
 	$scope.refillWater = function()
 	{
 		var refilledBottles = 0;
-		_($scope.player.bag.items).each(function(item){
+
+		var items = $scope.player.bag.items;
+
+		for (var i = 0; i < items.length; i++) {
+			$scope.player.bag.items[i].utility = 100;
+			var item = items[i];
+			console.log(item);
 			if (item.name == 'Water Bottle')
 			{
+				console.log(item.utility);
 				if (item.utility < 100)
 				{
-					item.utility = 100;
+					item.utility = 100.0;
 					refilledBottles += 1;
-				}
+				} 
 			}
-		});
+			console.log(item);
+		};
+
+		console.log(items);
+
 		if (refilledBottles > 0)
 		{
 			$scope.addLogEntry("You refilled " + refilledBottles + " water bottles", $scope.minutesPassed);
@@ -481,8 +492,8 @@ function Ctrl($scope)
 			});
 		});
 
-		return list;
-
+		//return list;
+		$scope.boblist = list;
 	}
 
 	$scope.setup = {
@@ -535,6 +546,11 @@ function Ctrl($scope)
 				name: 'Flashlight'
 				, img: 'img/flashlight.jpg'
 				, volumeCCM: 98
+			}
+			, {
+				name: 'Battery'
+				, img: 'img/battery.jpg'
+				, volumeCCM: 19
 			}		]
 	}
 
@@ -543,6 +559,18 @@ function Ctrl($scope)
 		, hunger: 0
 		, alive: true
 	}
+
+	$scope.boblist = [];
+
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
+
+	$scope.addToBag($scope.store.items[2], $scope.setup.bag);
+
 }
 
 angular.module("bob").controller("Ctrl", Ctrl);
