@@ -16,7 +16,7 @@ function Ctrl($scope)
 			$scope.player.hunger += 0.0023;
 			$scope.drinkWater();
 			$scope.eatFood();
-			//$scope.rain();
+			$scope.rain();
 			$scope.adjustBodyTemp();
 			$scope.useFlashlight();
 
@@ -208,9 +208,9 @@ function Ctrl($scope)
 		{
 			var waters = $scope.usableItems("Water Bottle");
 			if (waters.length > 0) {
-				water = _.first(waters);
+				var water = _.first(waters);
 				water.utility -= 10;
-				$scope.player.thirst -= 0.82;
+				$scope.player.thirst -= 1.315;
 
 				if (water.utility <= 0 && waters.length == 1) {
 					$scope.addLogEntry("Drank last water bottle", $scope.minutesPassed);					
@@ -371,24 +371,15 @@ function Ctrl($scope)
 		var refilledBottles = 0;
 
 		var items = $scope.player.bag.items;
+		var waters = _.where($scope.player.bag.items, {name: "Water Bottle"});
+		var nonfullWaters = _.filter(waters, function(item) {
+			return item.utility < 100;
+		});
 
-		for (var i = 0; i < items.length; i++) {
-			$scope.player.bag.items[i].utility = 100;
-			var item = items[i];
-			console.log(item);
-			if (item.name == 'Water Bottle')
-			{
-				console.log(item.utility);
-				if (item.utility < 100)
-				{
-					item.utility = 100.0;
-					refilledBottles += 1;
-				} 
-			}
-			console.log(item);
-		};
-
-		console.log(items);
+		_(nonfullWaters).each(function(water) {
+			water.utility = 100.0;
+			refilledBottles += 1;
+		});
 
 		if (refilledBottles > 0)
 		{
@@ -492,7 +483,6 @@ function Ctrl($scope)
 			});
 		});
 
-		//return list;
 		$scope.boblist = list;
 	}
 
@@ -561,16 +551,6 @@ function Ctrl($scope)
 	}
 
 	$scope.boblist = [];
-
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-	$scope.addToBag($scope.store.items[0], $scope.setup.bag);
-
-	$scope.addToBag($scope.store.items[2], $scope.setup.bag);
-
 }
 
 angular.module("bob").controller("Ctrl", Ctrl);
