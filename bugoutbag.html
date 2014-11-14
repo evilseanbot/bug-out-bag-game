@@ -16,7 +16,7 @@
 				<img src='{{item.img}}' style='width: 200px; height: 200px'><br>
 				<div style='padding: 5px'>
 					{{item.name}}<br>			
-					<button class='button'>Buy</button>  {{item.volumeCCM}} cm3
+					<button class='button'>Buy</button>  {{(item.volumeCCM/1000).toFixed(2)}} dm<sup>3</sup>
 				</div>
 			</div>
 		</div>		
@@ -24,20 +24,20 @@
 		<div class='checklist'>
 			<div style='background-color: #fbb'>{{error}}</div>
 			<div class='button' ng-click='playThrough()' data-toggle="modal" data-target="#myModal">JOURNEY</div><br>
-			Bug Out Bag {{setup.bag.volumeCapacity - setup.bag.volumeFilled}} of {{setup.bag.volumeCapacity}} cm3 space left.
+			Bug Out Bag {{((setup.bag.volumeCapacity - setup.bag.volumeFilled)/1000).toFixed(2)}} of {{(setup.bag.volumeCapacity)/1000}} dm<sup>3</sup> space left.
 			<div ng-repeat='item in boblist' class='item'>
 				<div style='width: 410px; display: inline-block'>
 					{{item.name}} <span ng-show='item.quantity>1'>x {{item.quantity}}</span>
 				</div>
 				<div style='width: 125px; display: inline-block; color: #888'>
-					{{item.volumeCCM}} cm3
+					{{(item.volumeCCM/1000).toFixed(2)}} dm<sup>3</sup>
 				</div>
 				<span ng-click='removeItem(item.index, setup.bag)' style='color: red'>X</span>
 
 			</div>
 		</div>
 		<div style='color: #888'>
-		Version 0.9, now with darkness and flash lights.
+		Version 1.0, now with fewer significant numbers.
 		</div>
 
 		<!-- Modal -->
