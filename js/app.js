@@ -4,6 +4,7 @@ function Ctrl($scope)
 {
 	$scope.playThrough = function() {
 		$scope.resetGame();
+		$scope.scenario = "Car broke down in rural Oregon";
 		var thirstLevel = 0;
 		var hungerLevel = 0;
 		var coldLevel = 0;
@@ -84,8 +85,6 @@ function Ctrl($scope)
 				$scope.addLogEntry("You no longer have hypothermia", $scope.minutesPassed);
 			}
 
-
-			$scope.player.capability = $scope.capability();
 			// Actions effected by capability
 			$scope.findWater();						
 
@@ -287,6 +286,7 @@ function Ctrl($scope)
 		$scope.minutesPassed = 0;
 		$scope.logEntries = [];
 		$scope.raining = false;
+		$scope.player.problems = [];
 		$scope.player.alive = true;
 		$scope.player.thirst = 0;
 		$scope.player.hunger = 0;
@@ -311,7 +311,7 @@ function Ctrl($scope)
 		if (random == 1)
 		{
 			var random = _.random(100);
-			if (random < $scope.player.capability)
+			if (random < $scope.findWaterCapability())
 			{
 				if (_.some($scope.player.bag.items, {name: '0.02 Water Purifier'}))
 				{
@@ -387,6 +387,38 @@ function Ctrl($scope)
 		}
 	}
 
+	$scope.findWaterCapability = function() {
+		var result = $scope.capability();
+		var items = $scope.player.bag.items;
+		var problems = [];
+
+		if (!_.some(items, {name: 'Map of Oregon'}))
+		{
+			result *= 0.25;
+			problems.push("Have no map")
+		} else if (!_.some(items, {name: 'Compass'}) )
+		{
+			result *= 0.5;
+			problems.push("Have a map but no compass");
+		}
+
+		console.log(problems);
+
+		$scope.player.problems = $scope.player.problems.concat(problems);
+
+		console.log($scope.player.problems);
+
+		$scope.player.problemText = $scope.problemText($scope.player.problems);
+
+		return result;
+	}
+
+	$scope.generalCapability = function() {
+		var result = $scope.capability();
+		$scope.player.problemText = $scope.problemText($scope.player.problems);
+		return result;
+	}
+
 	$scope.capability = function() {
 		var result = 100;
 		var problems = [];
@@ -440,7 +472,12 @@ function Ctrl($scope)
 			problems.push("in Darkness")
 		}
 
+		$scope.player.problems = problems;
+		//$scope.player.problemText = $scope.problemText(problems);
+		return result;
+	}
 
+	$scope.problemText = function(problems) {
 		if (problems.length > 0)
 		{
 			var problemText = "You are "
@@ -453,8 +490,7 @@ function Ctrl($scope)
 			});
 		}
 		problemText += ".";
-		$scope.player.problemText = problemText;
-		return result;
+		return problemText;		
 	}
 
 	$scope.isDark = function() {
@@ -541,7 +577,18 @@ function Ctrl($scope)
 				name: 'Battery'
 				, img: 'img/battery.jpg'
 				, volumeCCM: 19
-			}		]
+			}, 
+			{
+				name: 'Map of Oregon'
+				, img: 'img/ormap.jpg'
+				, volumeCCM: 100
+			}, 
+			{
+				name: 'Compass'
+				, img: 'img/compass.jpg'
+				, volumeCCM: 70				
+			}
+		]
 	}
 
 	$scope.player = {
